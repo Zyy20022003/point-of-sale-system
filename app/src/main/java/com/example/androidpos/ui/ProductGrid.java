@@ -56,7 +56,7 @@ final class ProductGrid {
         Context context = parent.getContext();
         EditText search = Ui.field(parent, "Tìm món", filters.search, android.text.InputType.TYPE_CLASS_TEXT);
         List<String> options = new ArrayList<>();
-        options.add("Tất cả danh mục");
+        options.add("Mọi danh mục");
         int selected = 0;
         for (Category category : snapshot.categories()) {
             options.add(category.name);
@@ -68,14 +68,22 @@ final class ProductGrid {
         parent.addView(controls);
         Spinner category = Ui.spinner(controls, options, selected);
         category.setContentDescription("Danh mục món");
-        category.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
+        category.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1.2f));
         Spinner sort = Ui.spinner(controls, java.util.Arrays.asList("Theo tên", "Giá tăng", "Giá giảm"),
                 filters.sort);
         sort.setContentDescription("Sắp xếp món");
         sort.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
         TextView empty = Ui.text(parent, "", 16);
         RecyclerView grid = new RecyclerView(context);
-        grid.setLayoutManager(new GridLayoutManager(context, columns));
+        GridLayoutManager layout = new GridLayoutManager(context, columns);
+        grid.setLayoutManager(layout);
+        int minimumCardWidth = Ui.dp(context, 148);
+        grid.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            int columnsThatFit = Math.max(1, (right - left) / minimumCardWidth);
+            if (columnsThatFit != layout.getSpanCount()) {
+                layout.setSpanCount(columnsThatFit);
+            }
+        });
         Cards cards = new Cards(model, click);
         grid.setAdapter(cards);
         parent.addView(grid, new LinearLayout.LayoutParams(-1, 0, 1));

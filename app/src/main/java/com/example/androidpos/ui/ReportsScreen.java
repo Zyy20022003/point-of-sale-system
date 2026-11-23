@@ -1,6 +1,8 @@
 package com.example.androidpos.ui;
 
 import android.app.DatePickerDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -69,6 +71,8 @@ final class ReportsScreen {
         dateButton.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
         TextView empty = Ui.text(page, "Không tìm thấy đơn.", 16);
         ListView list = new ListView(page.getContext());
+        list.setDivider(new ColorDrawable(Color.TRANSPARENT));
+        list.setDividerHeight(Ui.dp(page.getContext(), 8));
         page.addView(list, new LinearLayout.LayoutParams(-1, 0, 1));
         List<Sale> matches = new ArrayList<>();
         Runnable update = () -> {
@@ -88,7 +92,7 @@ final class ReportsScreen {
                     rows.add(label(sale) + "\n" + Ui.status(sale.status) + " · " + Ui.payment(sale.paymentMethod));
                 }
             }
-            list.setAdapter(new ArrayAdapter<>(page.getContext(), android.R.layout.simple_list_item_1, rows));
+            list.setAdapter(new ArrayAdapter<>(page.getContext(), R.layout.history_row, rows));
             empty.setVisibility(matches.isEmpty() ? View.VISIBLE : View.GONE);
         };
         dateButton.setOnClickListener(v -> pickDate(historyDay == null ? Periods.today() : historyDay, date -> {
@@ -143,8 +147,10 @@ final class ReportsScreen {
     private void showReport(LinearLayout content, PosRepository.Report report, LocalDate date,
                             Periods.Unit unit) {
         content.removeAllViews();
-        Ui.text(content, Ui.money(report.revenue()), 32);
-        Ui.text(content, report.sales().size() + " đơn đã thanh toán  ·  " + report.quantity() + " món đã bán", 17);
+        LinearLayout totals = Ui.card(content);
+        Ui.muted(totals, "Doanh thu · " + Ui.period(date, unit), 14);
+        Ui.emphasis(totals, Ui.money(report.revenue()), 32);
+        Ui.muted(totals, report.sales().size() + " đơn đã thanh toán  ·  " + report.quantity() + " món đã bán", 15);
         if (report.sales().isEmpty()) {
             Ui.text(content, "Chưa có đơn đã thanh toán trong kỳ này.", 16);
             return;
@@ -152,12 +158,13 @@ final class ReportsScreen {
         if (unit == Periods.Unit.DAY) {
             Ui.heading(content, "Đơn đã thanh toán");
             for (Sale sale : report.sales()) {
-                Ui.button(content, label(sale), () -> details(content, sale));
+                Ui.outlined(content, label(sale), () -> details(content, sale));
             }
             return;
         }
 
         Ui.heading(content, unit == Periods.Unit.MONTH ? "Doanh thu từng ngày" : "Doanh thu từng tháng");
+        LinearLayout chart = Ui.card(content);
         BigInteger maximum = BigInteger.ONE;
         for (BigInteger amount : report.buckets().values()) {
             maximum = maximum.max(amount);
@@ -170,12 +177,16 @@ final class ReportsScreen {
             amount = amount == null ? BigInteger.ZERO : amount;
             String legend = Ui.period(bucket, unit == Periods.Unit.MONTH ? Periods.Unit.DAY : Periods.Unit.MONTH)
                     + "  ·  " + Ui.money(amount);
-            Ui.text(content, legend, 15);
-            LinearProgressIndicator bar = new LinearProgressIndicator(content.getContext());
+            Ui.text(chart, legend, 15);
+            LinearProgressIndicator bar = new LinearProgressIndicator(chart.getContext());
+            bar.setTrackThickness(Ui.dp(chart.getContext(), 8));
+            bar.setTrackCornerRadius(Ui.dp(chart.getContext(), 4));
             bar.setMax(100);
             bar.setProgress(amount.multiply(BigInteger.valueOf(100)).divide(maximum).intValue());
             bar.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-            content.addView(bar, new LinearLayout.LayoutParams(-1, -2));
+            LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(-1, -2);
+            barParams.bottomMargin = Ui.dp(chart.getContext(), 6);
+            chart.addView(bar, barParams);
         }
     }
 

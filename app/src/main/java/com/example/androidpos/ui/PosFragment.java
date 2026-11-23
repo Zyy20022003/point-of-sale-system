@@ -1,5 +1,6 @@
 package com.example.androidpos.ui;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -210,18 +211,41 @@ public final class PosFragment extends Fragment {
     private void dashboard() {
         LinearLayout column = Ui.scroll(page);
         Ui.heading(column, "Thu ngân POS");
+        boolean wide = getResources().getConfiguration().screenWidthDp >= 840;
+        LinearLayout overview = column;
+        LinearLayout actions = column;
+        if (wide) {
+            LinearLayout panels = Ui.row(requireContext());
+            column.addView(panels);
+            overview = Ui.column(requireContext());
+            actions = Ui.column(requireContext());
+            panels.addView(overview, new LinearLayout.LayoutParams(0, -2, 3));
+            LinearLayout.LayoutParams actionPanel = new LinearLayout.LayoutParams(0, -2, 2);
+            actionPanel.setMarginStart(Ui.dp(requireContext(), 20));
+            panels.addView(actions, actionPanel);
+        }
         PosRepository.Report today = snapshot.today();
-        Ui.text(column, "Doanh thu hôm nay · " + Ui.DATE.format(snapshot.reportDay()), 16);
-        Ui.text(column, Ui.money(today.revenue()), 34);
-        Ui.text(column, today.sales().size() + " đơn đã thanh toán  ·  " + today.quantity() + " món đã bán", 17);
+        LinearLayout summary = Ui.card(overview, Color.rgb(43, 32, 25), false);
+        Ui.text(summary, Ui.DATE.format(snapshot.reportDay()), 13).setTextColor(Color.rgb(224, 194, 174));
+        Ui.text(summary, "Doanh thu hôm nay", 16).setTextColor(Color.rgb(249, 226, 210));
+        Ui.emphasis(summary, Ui.money(today.revenue()), 36).setTextColor(Color.WHITE);
+
+        boolean stackMetrics = getResources().getConfiguration().screenWidthDp < 340
+                || getResources().getConfiguration().fontScale >= 1.4f;
+        LinearLayout metrics = stackMetrics ? Ui.column(requireContext()) : Ui.row(requireContext());
+        overview.addView(metrics);
+        dashboardMetric(metrics, Integer.toString(today.sales().size()), "Đơn đã thanh toán", stackMetrics, true);
+        dashboardMetric(metrics, Long.toString(today.quantity()), "Món đã bán", stackMetrics, false);
         boolean hasDraft = snapshot.cart().sale() != null;
-        Ui.button(column, hasDraft ? "Tiếp tục đơn đang tạo" : "Tạo đơn mới", () -> {
+        Ui.button(actions, hasDraft ? "Tiếp tục đơn đang tạo" : "Tạo đơn mới", () -> {
             cartVisible = hasDraft;
             navigate(R.id.nav_order);
-        });
-        Ui.button(column, "Xem thống kê", () -> navigate(R.id.nav_statistics));
-        Ui.button(column, "Cấu hình VietQR", () -> new TransferQr(requireContext()).configure());
-        Ui.button(column, "Tạo dữ liệu mẫu", () -> confirm("Thêm thực đơn mẫu?",
+        }).setIconResource(R.drawable.ic_ui_order);
+        Ui.outlined(actions, "Xem thống kê", () -> navigate(R.id.nav_statistics))
+                .setIconResource(R.drawable.ic_ui_statistics);
+        Ui.quiet(actions, "Cấu hình VietQR", () -> new TransferQr(requireContext()).configure())
+                .setIconResource(R.drawable.ic_ui_bank);
+        Ui.quiet(actions, "Tạo dữ liệu mẫu", () -> confirm("Thêm thực đơn mẫu?",
                 "Ứng dụng thêm 6 món và 2 danh mục có nhãn [Mẫu]. Các món dùng được trong giỏ hàng thử.",
                 () -> model.write(model.repository::seedSampleCatalog, () -> {
                     if (isAdded()) {
@@ -229,6 +253,23 @@ public final class PosFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show();
                     }
                 })));
+    }
+
+    private void dashboardMetric(LinearLayout parent, String value, String label,
+                                 boolean stacked, boolean first) {
+        LinearLayout content = Ui.card(parent);
+        if (!stacked) {
+            View card = (View) content.getParent();
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) card.getLayoutParams();
+            params.width = 0;
+            params.weight = 1;
+            if (first) {
+                params.setMarginEnd(Ui.dp(requireContext(), 12));
+            }
+            card.setLayoutParams(params);
+        }
+        Ui.emphasis(content, value, 25);
+        Ui.muted(content, label, 14);
     }
 
     private void products() {
@@ -242,8 +283,9 @@ public final class PosFragment extends Fragment {
                 ProductEditor.create(null, snapshot.categories()).show(getChildFragmentManager(), "product");
             }
         }).setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
-        Ui.button(actions, "Danh mục", this::categories)
-                .setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout.LayoutParams categoryAction = new LinearLayout.LayoutParams(0, -2, 1);
+        categoryAction.setMarginStart(Ui.dp(requireContext(), 8));
+        Ui.outlined(actions, "Danh mục", this::categories).setLayoutParams(categoryAction);
         ProductGrid.add(page, model, snapshot, menuFilters, false,
                 Math.max(1, getResources().getConfiguration().screenWidthDp / 175),
                 product -> ProductEditor.create(product, snapshot.categories())
@@ -300,11 +342,12 @@ public final class PosFragment extends Fragment {
             lanes.addView(cartPanel, new LinearLayout.LayoutParams(0, -1, 2));
             sellingGrid(catalog, Math.max(2, width / 300));
         } else {
-            cartToggle = Ui.button(page, "", () -> {
+            cartToggle = Ui.outlined(page, "", () -> {
                 cartVisible = !cartVisible;
                 hideKeyboard();
                 render();
             });
+            cartToggle.setIconResource(R.drawable.ic_ui_order);
             if (cartVisible) {
                 cartPanel = Ui.column(requireContext());
                 page.addView(cartPanel, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -338,30 +381,36 @@ public final class PosFragment extends Fragment {
             OneShotPreDrawListener.add(updated, () -> updated.scrollTo(0, scrollPosition));
         }
         if (cart.items().isEmpty()) {
-            Ui.text(lines, "Chưa có món trong giỏ.", 16);
+            Ui.muted(Ui.card(lines), "Chưa có món trong giỏ.", 16);
         }
         if (cart.sale() == null) {
             return;
         }
         long orderId = cart.sale().id;
         for (SaleItem line : cart.items()) {
-            Ui.text(lines, line.productName + " × " + line.quantity, 17);
-            Ui.text(lines, Ui.money(line.unitPrice) + " / món  ·  " + Ui.money(line.lineTotal), 15);
+            LinearLayout card = Ui.card(lines);
+            Ui.emphasis(card, line.productName + " × " + line.quantity, 17);
+            Ui.muted(card, Ui.money(line.unitPrice) + " / món  ·  " + Ui.money(line.lineTotal), 15);
             LinearLayout controls = Ui.row(requireContext());
-            lines.addView(controls);
-            MaterialButton minus = Ui.button(controls, "−", () ->
+            card.addView(controls);
+            MaterialButton minus = Ui.outlined(controls, "−", () ->
                     model.write(() -> model.repository.changeQuantity(orderId, line.productId, -1)));
             minus.setContentDescription("Giảm số lượng " + line.productName);
             minus.setEnabled(line.quantity > 1);
-            Ui.button(controls, "+", () ->
-                    model.write(() -> model.repository.changeQuantity(orderId, line.productId, 1)))
-                    .setContentDescription("Tăng số lượng " + line.productName);
-            Ui.button(controls, "Bỏ món", () ->
+            MaterialButton plus = Ui.outlined(controls, "+", () ->
+                    model.write(() -> model.repository.changeQuantity(orderId, line.productId, 1)));
+            plus.setContentDescription("Tăng số lượng " + line.productName);
+            LinearLayout.LayoutParams plusParams = new LinearLayout.LayoutParams(-2, -2);
+            plusParams.setMarginStart(Ui.dp(requireContext(), 6));
+            plus.setLayoutParams(plusParams);
+            boolean compact = controls.getResources().getConfiguration().screenWidthDp < 330
+                    || controls.getResources().getConfiguration().fontScale >= 1.4f;
+            Ui.quiet(compact ? card : controls, "Bỏ món", () ->
                     model.write(() -> model.repository.removeItem(orderId, line.productId)));
         }
-        Ui.text(cartPanel, "Tổng cộng  " + Ui.money(cart.sale().total), 21);
+        Ui.emphasis(cartPanel, "Tổng cộng  " + Ui.money(cart.sale().total), 21);
         Ui.button(cartPanel, "Thanh toán", () -> show(PAYMENT)).setEnabled(!cart.items().isEmpty());
-        Ui.button(cartPanel, "Hủy đơn", () -> confirm("Hủy đơn đang tạo?",
+        Ui.quiet(cartPanel, "Hủy đơn", () -> confirm("Hủy đơn đang tạo?",
                 "Đơn sẽ được ghi vào lịch sử với trạng thái đã hủy.",
                 () -> model.write(() -> model.repository.cancel(orderId))));
     }
@@ -375,13 +424,17 @@ public final class PosFragment extends Fragment {
         Sale sale = cart.sale();
         LinearLayout content = Ui.scroll(page);
         Ui.heading(content, "Thanh toán");
-        Ui.text(content, "Tổng cần thu  " + Ui.money(sale.total), 26);
+        LinearLayout summary = Ui.card(content);
+        Ui.muted(summary, "Tổng cần thu", 14);
+        Ui.emphasis(summary, Ui.money(sale.total), 30);
         for (SaleItem line : cart.items()) {
-            Ui.text(content, line.productName + " × " + line.quantity + "  ·  " + Ui.money(line.lineTotal), 16);
+            Ui.text(summary, line.productName + " × " + line.quantity + "  ·  " + Ui.money(line.lineTotal), 16);
         }
-        EditText cash = Ui.field(content, "Tiền khách đưa (VNĐ)", "", InputType.TYPE_CLASS_NUMBER);
-        TextView change = Ui.text(content, "Tiền thừa  —", 18);
-        MaterialButton cashButton = Ui.button(content, "Xác nhận tiền mặt", () ->
+        LinearLayout cashPanel = Ui.card(content);
+        Ui.emphasis(cashPanel, "Tiền mặt", 19);
+        EditText cash = Ui.field(cashPanel, "Tiền khách đưa (VNĐ)", "", InputType.TYPE_CLASS_NUMBER);
+        TextView change = Ui.muted(cashPanel, "Tiền thừa  —", 16);
+        MaterialButton cashButton = Ui.button(cashPanel, "Xác nhận tiền mặt", () ->
                 confirm("Ghi nhận thanh toán tiền mặt?", "Tổng cần thu " + Ui.money(sale.total),
                         () -> pay(sale, true, Amounts.parse(cash.getText().toString()))));
         cashButton.setEnabled(false);
@@ -395,12 +448,15 @@ public final class PosFragment extends Fragment {
                 cashButton.setEnabled(false);
             }
         });
-        Ui.button(content, "Hiện mã VietQR", () -> new TransferQr(requireContext()).show(sale))
-                .setEnabled(sale.total > 0);
-        Ui.button(content, "Xác nhận chuyển khoản", () -> confirm("Đã nhận được chuyển khoản?",
+        LinearLayout transfer = Ui.card(content);
+        Ui.emphasis(transfer, "Chuyển khoản", 19);
+        MaterialButton qr = Ui.outlined(transfer, "Hiện mã VietQR", () -> new TransferQr(requireContext()).show(sale));
+        qr.setIconResource(R.drawable.ic_ui_qr);
+        qr.setEnabled(sale.total > 0);
+        Ui.quiet(transfer, "Xác nhận chuyển khoản", () -> confirm("Đã nhận được chuyển khoản?",
                 "Hãy kiểm tra đã nhận đủ " + Ui.money(sale.total) + " trước khi xác nhận.",
                 () -> pay(sale, false, null)));
-        Ui.button(content, "Quay lại giỏ hàng", () -> show(R.id.nav_order));
+        Ui.quiet(content, "Quay lại giỏ hàng", () -> show(R.id.nav_order));
     }
 
     private void pay(Sale sale, boolean cash, Long received) {

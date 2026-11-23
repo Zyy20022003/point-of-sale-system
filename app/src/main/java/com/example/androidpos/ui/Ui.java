@@ -1,6 +1,10 @@
 package com.example.androidpos.ui;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.view.View;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.ArrayAdapter;
@@ -14,6 +18,9 @@ import androidx.core.widget.NestedScrollView;
 import androidx.core.view.ViewCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.color.MaterialColors;
+import com.google.android.material.textview.MaterialTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -62,8 +69,9 @@ final class Ui {
     }
 
     static TextView text(LinearLayout parent, String value, int size) {
-        TextView view = new TextView(parent.getContext());
+        TextView view = new MaterialTextView(parent.getContext());
         view.setText(value);
+        view.setTextColor(color(view, com.google.android.material.R.attr.colorOnSurface));
         view.setTextSize(size);
         view.setPadding(0, dp(parent.getContext(), 6), 0, dp(parent.getContext(), 6));
         parent.addView(view);
@@ -71,15 +79,74 @@ final class Ui {
     }
 
     static TextView heading(LinearLayout parent, String value) {
-        TextView view = text(parent, value, 24);
+        TextView view = emphasis(parent, value, 27);
+        view.setLetterSpacing(-0.015f);
         ViewCompat.setAccessibilityHeading(view, true);
         return view;
     }
 
+    static TextView emphasis(LinearLayout parent, String value, int size) {
+        TextView view = text(parent, value, size);
+        view.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        return view;
+    }
+
+    static TextView muted(LinearLayout parent, String value, int size) {
+        TextView view = text(parent, value, size);
+        view.setTextColor(color(view, com.google.android.material.R.attr.colorOnSurfaceVariant));
+        return view;
+    }
+
+    static int color(View view, int role) {
+        return MaterialColors.getColor(view, role);
+    }
+
+    static LinearLayout card(LinearLayout parent, int surface, boolean border) {
+        Context context = parent.getContext();
+        MaterialCardView card = new MaterialCardView(context);
+        card.setRadius(dp(context, 22));
+        card.setCardElevation(0);
+        card.setCardBackgroundColor(surface);
+        card.setStrokeColor(color(parent, com.google.android.material.R.attr.colorOutlineVariant));
+        card.setStrokeWidth(border ? dp(context, 1) : 0);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
+        params.bottomMargin = dp(context, 12);
+        parent.addView(card, params);
+        LinearLayout content = column(context);
+        int inset = dp(context, 16);
+        content.setPadding(inset, inset, inset, inset);
+        card.addView(content, new android.widget.FrameLayout.LayoutParams(-1, -2));
+        return content;
+    }
+
+    static LinearLayout card(LinearLayout parent) {
+        return card(parent, color(parent, com.google.android.material.R.attr.colorSurfaceContainerLow), true);
+    }
+
     static MaterialButton button(LinearLayout parent, String label, Runnable action) {
-        MaterialButton view = new MaterialButton(parent.getContext());
+        return button(parent, label, action, com.google.android.material.R.attr.materialButtonStyle);
+    }
+
+    static MaterialButton outlined(LinearLayout parent, String label, Runnable action) {
+        return button(parent, label, action, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+    }
+
+    static MaterialButton quiet(LinearLayout parent, String label, Runnable action) {
+        MaterialButton view = button(parent, label, action);
+        view.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
+        int ink = color(view, androidx.appcompat.R.attr.colorPrimary);
+        view.setTextColor(ink);
+        view.setIconTint(ColorStateList.valueOf(ink));
+        view.setStateListAnimator(null);
+        return view;
+    }
+
+    private static MaterialButton button(LinearLayout parent, String label, Runnable action, int style) {
+        MaterialButton view = new MaterialButton(parent.getContext(), null, style);
         view.setText(label);
         view.setAllCaps(false);
+        view.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
+        view.setMinHeight(dp(parent.getContext(), 48));
         view.setOnClickListener(v -> action.run());
         parent.addView(view);
         return view;
