@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AndroidPOS" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#006859</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#A3F2E0</item>
+        <item name="colorOnPrimaryContainer">#00201A</item>
+        <item name="colorSecondaryContainer">#D7EBE4</item>
+        <item name="colorOnSecondaryContainer">#11201C</item>
+        <item name="colorSurface">#F7FBF9</item>
+        <item name="android:windowBackground">#F7FBF9</item>
+    </style>
+</resources>
