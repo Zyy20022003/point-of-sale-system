@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.AndroidPOS" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">#83D5C4</item>
-        <item name="colorOnPrimary">#00382E</item>
-        <item name="colorPrimaryContainer">#005044</item>
-        <item name="colorOnPrimaryContainer">#A3F2E0</item>
-        <item name="colorSecondaryContainer">#334B45</item>
-        <item name="colorOnSecondaryContainer">#CDE9E0</item>
-        <item name="colorSurface">#111816</item>
-        <item name="android:windowBackground">#111816</item>
+        <item name="colorPrimary">#FFB59A</item>
+        <item name="colorOnPrimary">#562513</item>
+        <item name="colorPrimaryContainer">#643822</item>
+        <item name="colorOnPrimaryContainer">#FFDBCC</item>
+        <item name="colorSecondaryContainer">#49352B</item>
+        <item name="colorOnSecondaryContainer">#F7DACB</item>
+        <item name="colorSurface">#191613</item>
+        <item name="colorSurfaceContainerLow">#25201C</item>
+        <item name="colorOnSurface">#F4EAE2</item>
+        <item name="colorOnSurfaceVariant">#D5C1B4</item>
+        <item name="colorOutlineVariant">#4B3C33</item>
+        <item name="colorSurfaceContainer">#2F2823</item>
+        <item name="colorSurfaceBright">#302720</item>
+        <item name="colorError">#FFB3B7</item>
+        <item name="colorOnError">#650E21</item>
+        <item name="colorErrorContainer">#613138</item>
+        <item name="colorOnErrorContainer">#FFDADD</item>
+        <item name="colorOutline">#AA9588</item>
+        <item name="colorSurfaceContainerLowest">#14110F</item>
+        <item name="colorSurfaceContainerHigh">#352C26</item>
+        <item name="colorSurfaceContainerHighest">#40352E</item>
+        <item name="colorSurfaceDim">#191613</item>
+        <item name="colorSurfaceVariant">#2F2823</item>
+        <item name="colorTertiary">#FFB59A</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
     </style>
 </resources>

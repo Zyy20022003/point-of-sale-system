@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.AndroidPOS" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">#006859</item>
+        <item name="colorPrimary">#9C462B</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorPrimaryContainer">#A3F2E0</item>
-        <item name="colorOnPrimaryContainer">#00201A</item>
-        <item name="colorSecondaryContainer">#D7EBE4</item>
-        <item name="colorOnSecondaryContainer">#11201C</item>
-        <item name="colorSurface">#F7FBF9</item>
-        <item name="android:windowBackground">#F7FBF9</item>
+        <item name="colorPrimaryContainer">#FCE7DB</item>
+        <item name="colorOnPrimaryContainer">#512213</item>
+        <item name="colorSecondaryContainer">#F6E8DE</item>
+        <item name="colorOnSecondaryContainer">#563626</item>
+        <item name="colorSurface">#F9F6F1</item>
+        <item name="colorSurfaceContainerLow">#FFFDFC</item>
+        <item name="colorOnSurface">#211B17</item>
+        <item name="colorOnSurfaceVariant">#695A50</item>
+        <item name="colorOutlineVariant">#E8DBD0</item>
+        <item name="colorSurfaceContainer">#F2EBE3</item>
+        <item name="colorSurfaceBright">#FFFFFF</item>
+        <item name="colorError">#9C2C35</item>
+        <item name="colorOnError">#FFFFFF</item>
+        <item name="colorErrorContainer">#FBE2E3</item>
+        <item name="colorOnErrorContainer">#611219</item>
+        <item name="colorOutline">#827065</item>
+        <item name="colorSurfaceContainerLowest">#FFFFFF</item>
+        <item name="colorSurfaceContainerHigh">#EDE3D9</item>
+        <item name="colorSurfaceContainerHighest">#E8DBD0</item>
+        <item name="colorSurfaceDim">#E9DED3</item>
+        <item name="colorSurfaceVariant">#F2EBE3</item>
+        <item name="colorTertiary">#9C462B</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
     </style>
 </resources>

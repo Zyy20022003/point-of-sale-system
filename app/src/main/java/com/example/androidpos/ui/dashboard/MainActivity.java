@@ -11,7 +11,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.androidpos.R;
 import com.example.androidpos.ui.PosFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 public final class MainActivity extends AppCompatActivity {
     @Override
@@ -26,7 +26,7 @@ public final class MainActivity extends AppCompatActivity {
             view.setPadding(safeArea.left, safeArea.top, safeArea.right, safeArea.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        NavigationBarView navigation = findViewById(R.id.navigation);
         PosFragment existing = (PosFragment) getSupportFragmentManager().findFragmentById(R.id.screen);
         PosFragment page = existing == null ? new PosFragment() : existing;
         if (existing == null) {
@@ -40,7 +40,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     public void navigate(int item) {
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        NavigationBarView navigation = findViewById(R.id.navigation);
         navigation.setSelectedItemId(item);
     }
 }
